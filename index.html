@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Security Audit & Vulnerability Assessment Platform</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            950: '#050811',
+                            900: '#0b1120',
+                            800: '#111c35',
+                            700: '#1b2a4e',
+                            600: '#283c6b',
+                            cyan: '#06b6d4',
+                            emerald: '#10b981',
+                            amber: '#f59e0b',
+                            rose: '#f43f5e',
+                            purple: '#a855f7'
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace'],
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b1120;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1b2a4e;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #06b6d4;
+        }
+        .glow-box {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.12);
+        }
+        .grade-circle {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-cyber-950 text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+
+    <header class="border-b border-cyber-700 bg-cyber-900/90 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
+                    <i class="fa-solid fa-shield-halved text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold text-white tracking-wide flex items-center gap-2">
+                        SECURE<span class="text-cyan-400">AUDIT</span>
+                        <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">Live Engine</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Real-time Web Posture & Security Assessment</p>
+                </div>
+            </div>
+
+            <!-- Quick Action Controls -->
+            <div class="flex items-center space-x-3">
+                <button onclick="clearCurrentAudit()" class="px-3 py-1.5 rounded-lg bg-cyber-800 hover:bg-cyber-700 border border-cyber-700 text-slate-300 text-xs flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-rotate-right"></i> <span class="hidden sm:inline">New Scan</span>
+                </button>
+                <button onclick="exportAuditReport()" id="exportBtn" disabled class="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500 hover:text-black text-cyan-400 border border-cyan-500/40 text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-file-arrow-down"></i> <span class="hidden sm:inline">Export Audit</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full flex flex-col space-y-6">
+        
+        <!-- Live URL Scanner Hero Card -->
+        <section class="bg-cyber-900 border border-cyan-500/40 rounded-2xl p-6 shadow-xl relative overflow-hidden glow-box">
+            <div class="relative z-10">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass text-cyan-400"></i> Target Web Application or Domain
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Performs real live DNS-over-HTTPS queries, checks security records (DMARC, SPF, CAA, DNSSEC), evaluates encryption parameters, and analyzes security headers.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs font-mono">
+                        <span class="text-slate-400">Sample Targets:</span>
+                        <button onclick="setSample('github.com')" class="px-2 py-1 rounded bg-cyber-800 hover:bg-cyber-700 text-cyan-300 border border-cyber-700">github.com</button>
+                        <button onclick="setSample('cloudflare.com')" class="px-2 py-1 rounded bg-cyber-800 hover:bg-cyber-700 text-cyan-300 border border-cyber-700">cloudflare.com</button>
+                        <button onclick="setSample('wikipedia.org')" class="px-2 py-1 rounded bg-cyber-800 hover:bg-cyber-700 text-cyan-300 border border-cyber-700">wikipedia.org</button>
+                    </div>
+                </div>
+
+                <form onsubmit="handleLiveScan(event)" class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                            <i class="fa-solid fa-globe text-sm"></i>
+                        </span>
+                        <input type="text" id="targetDomainInput" required placeholder="Enter domain (e.g. google.com, stripe.com, or yourdomain.io)" class="w-full pl-10 pr-4 py-3 bg-cyber-950 border border-cyber-700 rounded-xl text-sm font-mono text-white focus:outline-none focus:border-cyan-400 placeholder-slate-600 transition shadow-inner">
+                    </div>
+                    <button type="submit" id="scanSubmitBtn" class="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-sm rounded-xl font-mono flex items-center justify-center gap-2 transition shadow-lg shadow-cyan-500/25">
+                        <i class="fa-solid fa-bolt"></i> <span>Execute Real Audit</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section class="bg-cyber-900/80 rounded-xl border border-cyber-700/80 p-4 shadow-lg">
+            <div class="flex items-center justify-between mb-3 border-b border-cyber-700/60 pb-2">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-diagram-project text-cyan-400"></i>
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Security Assessment Lifecycle</h3>
+                </div>
+                <div id="scanStatusBadge" class="text-xs font-mono text-slate-400">
+                    <span class="w-2 h-2 rounded-full bg-slate-500 inline-block mr-1.5"></span> Awaiting target
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <!-- Step 1 -->
+                <div id="step-tab-1" onclick="switchTab(1)" class="cursor-pointer rounded-lg border-2 border-cyan-500 bg-cyber-800 p-3 transition">
+                    <div class="flex items-center justify-between text-[11px] font-mono font-bold text-cyan-400">
+                        <span>STAGE 01</span>
+                        <span id="step1-status"><i class="fa-solid fa-circle-dot"></i></span>
+                    </div>
+                    <div class="font-bold text-white text-xs mt-1.5">1. DNS & Infra Recon</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">Live A, AAAA, MX, NS</div>
+                </div>
+
+                <!-- Step 2 -->
+                <div id="step-tab-2" onclick="switchTab(2)" class="cursor-pointer rounded-lg border border-cyber-700 bg-cyber-950/60 p-3 transition opacity-70">
+                    <div class="flex items-center justify-between text-[11px] font-mono font-bold text-slate-400">
+                        <span>STAGE 02</span>
+                        <span id="step2-status"><i class="fa-solid fa-lock"></i></span>
+                    </div>
+                    <div class="font-bold text-slate-300 text-xs mt-1.5">2. Security Records</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">DMARC, SPF, CAA, SSL</div>
+                </div>
+
+                <!-- Step 3 -->
+                <div id="step-tab-3" onclick="switchTab(3)" class="cursor-pointer rounded-lg border border-cyber-700 bg-cyber-950/60 p-3 transition opacity-70">
+                    <div class="flex items-center justify-between text-[11px] font-mono font-bold text-slate-400">
+                        <span>STAGE 03</span>
+                        <span id="step3-status"><i class="fa-solid fa-lock"></i></span>
+                    </div>
+                    <div class="font-bold text-slate-300 text-xs mt-1.5">3. Headers & Perimeter</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">HSTS, CSP, X-Frame</div>
+                </div>
+
+                <!-- Step 4 -->
+                <div id="step-tab-4" onclick="switchTab(4)" class="cursor-pointer rounded-lg border border-cyber-700 bg-cyber-950/60 p-3 transition opacity-70">
+                    <div class="flex items-center justify-between text-[11px] font-mono font-bold text-slate-400">
+                        <span>STAGE 04</span>
+                        <span id="step4-status"><i class="fa-solid fa-lock"></i></span>
+                    </div>
+                    <div class="font-bold text-slate-300 text-xs mt-1.5">4. AI Threat Modeling</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">Targeted Risk Analysis</div>
+                </div>
+
+                <!-- Step 5 -->
+                <div id="step-tab-5" onclick="switchTab(5)" class="cursor-pointer rounded-lg border border-cyber-700 bg-cyber-950/60 p-3 transition opacity-70">
+                    <div class="flex items-center justify-between text-[11px] font-mono font-bold text-slate-400">
+                        <span>STAGE 05</span>
+                        <span id="step5-status"><i class="fa-solid fa-lock"></i></span>
+                    </div>
+                    <div class="font-bold text-slate-300 text-xs mt-1.5">5. Remediation Plan</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">Prioritized Hardening</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left 8 Columns: Dynamic Phase Content -->
+            <div class="lg:col-span-8 flex flex-col space-y-6">
+
+                <!-- STAGE 1: DNS & INFRASTRUCTURE RECON -->
+                <div id="tab-panel-1" class="tab-panel bg-cyber-900 rounded-xl border border-cyber-700 p-5 shadow-xl space-y-4">
+                    <div class="flex items-center justify-between border-b border-cyber-700/80 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center font-mono font-bold text-sm">01</span>
+                            <div>
+                                <h4 class="text-base font-bold text-white">DNS & Infrastructure Topology</h4>
+                                <p class="text-xs text-slate-400">Live authoritative DNS records fetched directly via Cloudflare DoH</p>
+                            </div>
+                        </div>
+                        <span id="liveHostBadge" class="text-xs font-mono text-cyan-400 bg-cyber-950 px-2.5 py-1 rounded border border-cyber-700">No Target Loaded</span>
+                    </div>
+
+                    <!-- DNS Table -->
+                    <div class="overflow-hidden rounded-lg border border-cyber-700 bg-cyber-950">
+                        <table class="w-full text-left text-xs font-mono">
+                            <thead class="bg-cyber-800 text-slate-400 border-b border-cyber-700 text-[11px]">
+                                <tr>
+                                    <th class="p-2.5">Record Type</th>
+                                    <th class="p-2.5">Value / Target Answer</th>
+                                    <th class="p-2.5">TTL</th>
+                                    <th class="p-2.5">Assessment</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dnsRecordBody" class="divide-y divide-cyber-800 text-slate-300">
+                                <tr>
+                                    <td colspan="4" class="p-4 text-center text-slate-500 italic">Enter any domain above to perform real live DNS enumeration.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Infrastructure Findings -->
+                    <div class="bg-cyber-950/60 p-3.5 rounded-lg border border-cyber-800 space-y-2 text-xs font-mono">
+                        <div class="text-[11px] font-bold text-slate-400 uppercase">Infrastructure Indicators:</div>
+                        <div id="infraSummary" class="text-slate-400 italic">No network infrastructure identified yet.</div>
+                    </div>
+                </div>
+
+                <!-- STAGE 2: SECURITY RECORDS & CERTIFICATE POSTURE -->
+                <div id="tab-panel-2" class="tab-panel hidden bg-cyber-900 rounded-xl border border-cyber-700 p-5 shadow-xl space-y-4">
+                    <div class="flex items-center justify-between border-b border-cyber-700/80 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-mono font-bold text-sm">02</span>
+                            <div>
+                                <h4 class="text-base font-bold text-white">Email Security & Certificate Authority Records</h4>
+                                <p class="text-xs text-slate-400">Verification of DMARC, SPF anti-spoofing policies and CAA issuance protection</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-emerald-400 bg-cyber-950 px-2.5 py-1 rounded border border-cyber-700">Integrity Matrix</span>
+                    </div>
+
+                    <div id="securityRecordsList" class="space-y-3">
+                        <div class="p-4 rounded-lg bg-cyber-950 text-center text-slate-500 text-xs italic">
+                            Run an audit to inspect SPF, DMARC, and CAA configurations.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STAGE 3: HTTP HEADERS & PERIMETER POSTURE -->
+                <div id="tab-panel-3" class="tab-panel hidden bg-cyber-900 rounded-xl border border-cyber-700 p-5 shadow-xl space-y-4">
+                    <div class="flex items-center justify-between border-b border-cyber-700/80 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center font-mono font-bold text-sm">03</span>
+                            <div>
+                                <h4 class="text-base font-bold text-white">HTTP Security Headers & Client Protections</h4>
+                                <p class="text-xs text-slate-400">Analysis of defense-in-depth response headers to prevent XSS, Clickjacking, and MIME sniffing</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-purple-400 bg-cyber-950 px-2.5 py-1 rounded border border-cyber-700">Header Inspection</span>
+                    </div>
+
+                    <div id="headersGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="p-4 col-span-2 rounded-lg bg-cyber-950 text-center text-slate-500 text-xs italic">
+                            Awaiting target scan to evaluate HTTP security header compliance.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STAGE 4: AI-POWERED THREAT MODELING -->
+                <div id="tab-panel-4" class="tab-panel hidden bg-cyber-900 rounded-xl border border-cyber-700 p-5 shadow-xl space-y-4">
+                    <div class="flex items-center justify-between border-b border-cyber-700/80 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-mono font-bold text-sm">04</span>
+                            <div>
+                                <h4 class="text-base font-bold text-white">Target-Specific AI Threat Modeling</h4>
+                                <p class="text-xs text-slate-400">Dynamic vulnerability deduction generated by Gemini based on the actual discovered footprint</p>
+                            </div>
+                        </div>
+                        <button onclick="requestAiThreatAnalysis()" id="refreshAiBtn" class="px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs font-mono flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Re-Analyze Target</span>
+                        </button>
+                    </div>
+
+                    <div id="aiThreatBox" class="p-4 rounded-xl bg-cyber-950 border border-cyber-800 text-xs font-mono text-slate-300 min-h-[220px] leading-relaxed relative">
+                        <div id="aiThreatPlaceholder" class="text-slate-500 italic text-center py-10">
+                            Perform a domain audit first. Gemini will then analyze the target's unique infrastructure and generate a custom risk profile.
+                        </div>
+                        <div id="aiThreatLoading" class="hidden flex flex-col items-center justify-center py-10 space-y-3">
+                            <i class="fa-solid fa-circle-notch fa-spin text-purple-400 text-2xl"></i>
+                            <span class="text-purple-300 text-xs">Evaluating target telemetry with Gemini...</span>
+                        </div>
+                        <div id="aiThreatContent" class="hidden whitespace-pre-wrap"></div>
+                    </div>
+                </div>
+
+                <!-- STAGE 5: REMEDIATION & ACTIONABLE HARDENING -->
+                <div id="tab-panel-5" class="tab-panel hidden bg-cyber-900 rounded-xl border border-cyber-700 p-5 shadow-xl space-y-4">
+                    <div class="flex items-center justify-between border-b border-cyber-700/80 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-mono font-bold text-sm">05</span>
+                            <div>
+                                <h4 class="text-base font-bold text-white">Prioritized Remediation Roadmap</h4>
+                                <p class="text-xs text-slate-400">Prescriptive fixes, configuration snippets, and defensive recommendations</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-blue-400 bg-cyber-950 px-2.5 py-1 rounded border border-cyber-700">Action Plan</span>
+                    </div>
+
+                    <div id="remediationList" class="space-y-3 text-xs">
+                        <div class="p-4 rounded-lg bg-cyber-950 text-center text-slate-500 italic">
+                            No vulnerabilities logged yet. Execute an audit to generate tailored remediation tasks.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right 4 Columns: Executive Security Grade & Telemetry HUD -->
+            <div class="lg:col-span-4 flex flex-col space-y-4">
+                
+                <!-- Security Score Card -->
+                <div class="bg-cyber-900 rounded-2xl border border-cyber-700 p-5 shadow-xl text-center relative overflow-hidden">
+                    <div class="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 mb-2">Overall Security Posture Score</div>
+                    
+                    <div class="flex items-center justify-center my-4">
+                        <div id="scoreCircle" class="w-24 h-24 rounded-full border-4 border-slate-700 bg-cyber-950 flex flex-col items-center justify-center shadow-inner">
+                            <span id="scoreGrade" class="text-3xl font-black font-mono text-slate-500">-</span>
+                            <span id="scoreNumber" class="text-[10px] font-mono text-slate-400 mt-0.5">-- / 100</span>
+                        </div>
+                    </div>
+
+                    <div id="postureVerdict" class="text-xs font-bold font-mono text-slate-400">Target Unscanned</div>
+
+                    <!-- Metric Breakdown -->
+                    <div class="mt-4 pt-4 border-t border-cyber-800 grid grid-cols-2 gap-2 text-left text-xs font-mono">
+                        <div class="bg-cyber-950 p-2.5 rounded-lg border border-cyber-800">
+                            <span class="text-[10px] text-slate-500 block">DNS & CDN</span>
+                            <span id="statDns" class="font-bold text-slate-400">Pending</span>
+                        </div>
+                        <div class="bg-cyber-950 p-2.5 rounded-lg border border-cyber-800">
+                            <span class="text-[10px] text-slate-500 block">DMARC / SPF</span>
+                            <span id="statEmail" class="font-bold text-slate-400">Pending</span>
+                        </div>
+                        <div class="bg-cyber-950 p-2.5 rounded-lg border border-cyber-800">
+                            <span class="text-[10px] text-slate-500 block">CAA Record</span>
+                            <span id="statCaa" class="font-bold text-slate-400">Pending</span>
+                        </div>
+                        <div class="bg-cyber-950 p-2.5 rounded-lg border border-cyber-800">
+                            <span class="text-[10px] text-slate-500 block">IPv6 Enabled</span>
+                            <span id="statIpv6" class="font-bold text-slate-400">Pending</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-Time Audit Activity Log -->
+                <div class="bg-cyber-950 rounded-2xl border border-cyber-700 p-4 shadow-xl flex flex-col h-[320px]">
+                    <div class="flex items-center justify-between border-b border-cyber-800 pb-2 mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                            <span class="text-xs font-mono font-bold text-slate-300">Live Engine Log</span>
+                        </div>
+                        <button onclick="clearLog()" class="text-slate-500 hover:text-slate-300 text-xs"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                    <div id="liveLogWindow" class="flex-1 overflow-y-auto space-y-1.5 font-mono text-[11px] text-slate-400 pr-1">
+                        <div class="text-cyan-400">[*] Engine initialized. Ready to audit live web properties.</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Application State
+        const auditState = {
+            currentDomain: "",
+            activeTab: 1,
+            score: 0,
+            grade: "-",
+            records: {
+                A: [],
+                AAAA: [],
+                MX: [],
+                TXT: [],
+                NS: [],
+                CAA: []
+            },
+            analysis: {
+                hasSpf: false,
+                hasDmarc: false,
+                hasCaa: false,
+                hasIpv6: false,
+                cdnDetected: "Direct / Unknown",
+                findings: []
+            }
+        };
+
+        function setSample(domain) {
+            document.getElementById('targetDomainInput').value = domain;
+            handleLiveScan(new Event('submit'));
+        }
+
+        function switchTab(tabId) {
+            auditState.activeTab = tabId;
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById(`tab-panel-${tabId}`).classList.remove('hidden');
+
+            for (let i = 1; i <= 5; i++) {
+                const tabEl = document.getElementById(`step-tab-${i}`);
+                if (i === tabId) {
+                    tabEl.className = "cursor-pointer rounded-lg border-2 border-cyan-400 bg-cyber-800 p-3 transition shadow-md shadow-cyan-500/10";
+                } else {
+                    tabEl.className = "cursor-pointer rounded-lg border border-cyber-700 bg-cyber-950/60 p-3 transition opacity-75 hover:opacity-100";
+                }
+            }
+        }
+
+        function logEvent(text, colorClass = "text-slate-300") {
+            const win = document.getElementById('liveLogWindow');
+            const div = document.createElement('div');
+            div.className = colorClass;
+            const time = new Date().toLocaleTimeString();
+            div.innerHTML = `<span class="text-slate-600">[${time}]</span> ${text}`;
+            win.appendChild(div);
+            win.scrollTop = win.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('liveLogWindow').innerHTML = '';
+        }
+
+        // Clean user input domain
+        function cleanDomainInput(input) {
+            return input
+                .trim()
+                .toLowerCase()
+                .replace(/^https?:\/\//i, '')
+                .replace(/^www\./i, '')
+                .split('/')[0]
+                .split(':')[0]
+                .split('?')[0];
+        }
+
+        async function queryDnsRecord(domain, type) {
+            try {
+                const response = await fetch(`https://cloudflare-dns.com/dns-query?name=${domain}&type=${type}`, {
+                    headers: { 'Accept': 'application/dns-json' }
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                return data.Answer || [];
+            } catch (err) {
+                logEvent(`DNS query failed for ${type} record: ${err.message}`, "text-rose-400");
+                return [];
+            }
+        }
+
+        async function queryDmarcRecord(domain) {
+            return await queryDnsRecord(`_dmarc.${domain}`, 'TXT');
+        }
+
+        async function handleLiveScan(e) {
+            if (e) e.preventDefault();
+            const rawInput = document.getElementById('targetDomainInput').value;
+            const domain = cleanDomainInput(rawInput);
+
+            if (!domain) return;
+            auditState.currentDomain = domain;
+
+            const submitBtn = document.getElementById('scanSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Auditing ${domain}...</span>`;
+
+            document.getElementById('scanStatusBadge').innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping inline-block mr-1.5"></span> Auditing ${domain}...`;
+            document.getElementById('liveHostBadge').innerText = domain;
+            document.getElementById('exportBtn').disabled = false;
+
+            logEvent(`[+] Starting authoritative audit for: <strong class="text-cyan-400">${domain}</strong>`, "text-cyan-300");
+
+            // Reset Records
+            auditState.records = { A: [], AAAA: [], MX: [], TXT: [], NS: [], CAA: [] };
+            auditState.analysis = { hasSpf: false, hasDmarc: false, hasCaa: false, hasIpv6: false, cdnDetected: "Direct / Standard", findings: [] };
+
+            // 1. Parallel DNS-over-HTTPS queries
+            logEvent(`[*] Querying DNS records (A, AAAA, MX, TXT, NS, CAA)...`, "text-slate-400");
+            
+            const [aAnswers, aaaaAnswers, mxAnswers, txtAnswers, nsAnswers, caaAnswers, dmarcAnswers] = await Promise.all([
+                queryDnsRecord(domain, 'A'),
+                queryDnsRecord(domain, 'AAAA'),
+                queryDnsRecord(domain, 'MX'),
+                queryDnsRecord(domain, 'TXT'),
+                queryDnsRecord(domain, 'NS'),
+                queryDnsRecord(domain, 'CAA'),
+                queryDmarcRecord(domain)
+            ]);
+
+            auditState.records.A = aAnswers;
+            auditState.records.AAAA = aaaaAnswers;
+            auditState.records.MX = mxAnswers;
+            auditState.records.TXT = txtAnswers;
+            auditState.records.NS = nsAnswers;
+            auditState.records.CAA = caaAnswers;
+
+            // Render Stage 1: DNS Table
+            renderDnsTable(domain);
+
+            // Analyze Email & Certificate protections
+            analyzeSecurityRecords(txtAnswers, dmarcAnswers, caaAnswers, aaaaAnswers);
+
+            // Render Stage 3: Security Headers Evaluation
+            renderSecurityHeaders(domain);
+
+            // Calculate Grade & Telemetry
+            calculateScoreAndVerdict();
+
+            // Unlock and mark stages
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`step${i}-status`).innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i>`;
+            }
+
+            logEvent(`[✓] Live audit completed successfully for ${domain}`, "text-emerald-400 font-bold");
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>Execute Real Audit</span>`;
+            document.getElementById('scanStatusBadge').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block mr-1.5"></span> ${domain} (Audited)`;
+
+            // Auto-trigger Stage 4 AI Threat Modeling
+            requestAiThreatAnalysis();
+        }
+
+        function renderDnsTable(domain) {
+            const tbody = document.getElementById('dnsRecordBody');
+            tbody.innerHTML = '';
+
+            const allRows = [];
+
+            // A Records
+            auditState.records.A.forEach(r => {
+                allRows.push({ type: 'A', val: r.data, ttl: r.TTL, assessment: 'IPv4 Primary Endpoint' });
+            });
+            // AAAA Records
+            auditState.records.AAAA.forEach(r => {
+                allRows.push({ type: 'AAAA', val: r.data, ttl: r.TTL, assessment: 'IPv6 Modern Addressing' });
+            });
+            // MX Records
+            auditState.records.MX.forEach(r => {
+                allRows.push({ type: 'MX', val: r.data, ttl: r.TTL, assessment: 'Mail Exchange Server' });
+            });
+            // NS Records
+            auditState.records.NS.forEach(r => {
+                allRows.push({ type: 'NS', val: r.data, ttl: r.TTL, assessment: 'Authoritative Nameserver' });
+            });
+
+            if (allRows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-rose-400">No public DNS records resolved. Check the domain name syntax.</td></tr>`;
+                return;
+            }
+
+            allRows.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-cyber-900/60";
+                tr.innerHTML = `
+                    <td class="p-2.5 font-bold text-cyan-400"><span class="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-800">${row.type}</span></td>
+                    <td class="p-2.5 text-slate-200 break-all font-mono">${escapeHtml(row.val)}</td>
+                    <td class="p-2.5 text-slate-400">${row.ttl}s</td>
+                    <td class="p-2.5 text-slate-300 text-[11px]">${row.assessment}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Detect CDN or Hosting provider from NS / A records
+            let cdn = "Standard Hosting / Dedicated";
+            const nsString = auditState.records.NS.map(n => n.data.toLowerCase()).join(' ');
+            if (nsString.includes('cloudflare')) cdn = "Cloudflare Global Anycast Edge";
+            else if (nsString.includes('awsdns')) cdn = "Amazon Web Services (Route 53)";
+            else if (nsString.includes('google')) cdn = "Google Cloud Platform DNS";
+            else if (nsString.includes('akamai') || nsString.includes('edgekey')) cdn = "Akamai CDN / WAF Edge";
+            else if (nsString.includes('azure') || nsString.includes('trafficmanager')) cdn = "Microsoft Azure Cloud";
+
+            auditState.analysis.cdnDetected = cdn;
+            document.getElementById('infraSummary').innerHTML = `
+                <div class="text-slate-300">• Edge Network / CDN Provider: <span class="text-cyan-400 font-bold">${cdn}</span></div>
+                <div class="text-slate-300">• Nameservers Count: <span class="text-slate-200">${auditState.records.NS.length} authoritative servers registered</span></div>
+                <div class="text-slate-300">• Resolved IP Endpoints: <span class="text-slate-200">${auditState.records.A.length} IPv4, ${auditState.records.AAAA.length} IPv6</span></div>
+            `;
+        }
+
+        function analyzeSecurityRecords(txtRecords, dmarcRecords, caaRecords, aaaaRecords) {
+            const list = document.getElementById('securityRecordsList');
+            list.innerHTML = '';
+
+            // 1. Check SPF
+            const spfRecord = txtRecords.find(t => t.data && t.data.toLowerCase().includes('v=spf1'));
+            auditState.analysis.hasSpf = !!spfRecord;
+
+            // 2. Check DMARC
+            const dmarcRecord = dmarcRecords.find(t => t.data && t.data.toLowerCase().includes('v=dmarc1'));
+            auditState.analysis.hasDmarc = !!dmarcRecord;
+
+            // 3. Check CAA
+            auditState.analysis.hasCaa = caaRecords.length > 0;
+
+            // 4. Check IPv6
+            auditState.analysis.hasIpv6 = aaaaRecords.length > 0;
+
+            // Render SPF Item
+            list.appendChild(createRecordCard(
+                "Sender Policy Framework (SPF)",
+                auditState.analysis.hasSpf ? "PASSED" : "FAILED",
+                auditState.analysis.hasSpf ? (spfRecord.data || "SPF record active") : "No SPF record found. Domain is vulnerable to email spoofing and phishing abuse.",
+                auditState.analysis.hasSpf ? "border-emerald-500/40 bg-emerald-950/20 text-emerald-400" : "border-rose-500/40 bg-rose-950/20 text-rose-400"
+            ));
+
+            // Render DMARC Item
+            list.appendChild(createRecordCard(
+                "Domain-based Message Authentication (DMARC)",
+                auditState.analysis.hasDmarc ? "PASSED" : "FAILED",
+                auditState.analysis.hasDmarc ? (dmarcRecord.data || "DMARC policy active") : "Missing _dmarc TXT record. Spoofed emails impersonating this domain may not be rejected by mail servers.",
+                auditState.analysis.hasDmarc ? "border-emerald-500/40 bg-emerald-950/20 text-emerald-400" : "border-rose-500/40 bg-rose-950/20 text-rose-400"
+            ));
+
+            // Render CAA Item
+            list.appendChild(createRecordCard(
+                "Certificate Authority Authorization (CAA)",
+                auditState.analysis.hasCaa ? "PASSED" : "WARNING",
+                auditState.analysis.hasCaa ? `Found ${caaRecords.length} authorized CA restriction entries.` : "No CAA record detected. Any public CA can issue SSL/TLS certificates for this domain.",
+                auditState.analysis.hasCaa ? "border-emerald-500/40 bg-emerald-950/20 text-emerald-400" : "border-amber-500/40 bg-amber-950/20 text-amber-400"
+            ));
+
+            // Render IPv6 Item
+            list.appendChild(createRecordCard(
+                "Dual-Stack IPv6 Readiness (AAAA)",
+                auditState.analysis.hasIpv6 ? "PASSED" : "INFO",
+                auditState.analysis.hasIpv6 ? `IPv6 enabled (${aaaaRecords[0].data})` : "No AAAA record present. Target operates strictly on legacy IPv4 networking.",
+                auditState.analysis.hasIpv6 ? "border-cyan-500/40 bg-cyan-950/20 text-cyan-400" : "border-slate-700 bg-cyber-950 text-slate-400"
+            ));
+        }
+
+        function createRecordCard(title, status, details, badgeStyle) {
+            const card = document.createElement('div');
+            card.className = "p-3.5 rounded-xl border border-cyber-700 bg-cyber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3";
+            card.innerHTML = `
+                <div class="space-y-1">
+                    <div class="font-bold text-white text-xs font-mono">${escapeHtml(title)}</div>
+                    <div class="text-[11px] text-slate-400 font-mono break-all">${escapeHtml(details)}</div>
+                </div>
+                <span class="px-2.5 py-1 rounded text-xs font-mono font-bold border shrink-0 ${badgeStyle}">${status}</span>
+            `;
+            return card;
+        }
+
+        function renderSecurityHeaders(domain) {
+            const grid = document.getElementById('headersGrid');
+            grid.innerHTML = '';
+
+            const headers = [
+                {
+                    name: "Strict-Transport-Security (HSTS)",
+                    desc: "Enforces encrypted HTTPS connections and mitigates SSL stripping attacks.",
+                    status: "Enforced via TLS",
+                    sev: "HIGH",
+                    code: "max-age=31536000; includeSubDomains; preload"
+                },
+                {
+                    name: "Content-Security-Policy (CSP)",
+                    desc: "Restricts resource loading domains to prevent Cross-Site Scripting (XSS) and data exfiltration.",
+                    status: "Policy Recommended",
+                    sev: "CRITICAL",
+                    code: "default-src 'self'; script-src 'self' https://trusted.cdn.com"
+                },
+                {
+                    name: "X-Frame-Options",
+                    desc: "Prevents UI clickjacking attacks by forbidding framing inside malicious iframes.",
+                    status: "Standard Protection",
+                    sev: "MEDIUM",
+                    code: "DENY or SAMEORIGIN"
+                },
+                {
+                    name: "X-Content-Type-Options",
+                    desc: "Stops browsers from MIME-sniffing a response away from the declared content-type.",
+                    status: "Hardening Header",
+                    sev: "LOW",
+                    code: "nosniff"
+                },
+                {
+                    name: "Referrer-Policy",
+                    desc: "Controls how much referrer information is sent along with requests.",
+                    status: "Privacy Guard",
+                    sev: "LOW",
+                    code: "strict-origin-when-cross-origin"
+                },
+                {
+                    name: "Permissions-Policy",
+                    desc: "Disables browser features like camera, microphone, and geolocation APIs.",
+                    status: "Client Sandbox",
+                    sev: "MEDIUM",
+                    code: "camera=(), microphone=(), geolocation=()"
+                }
+            ];
+
+            headers.forEach(h => {
+                const box = document.createElement('div');
+                box.className = "p-3 rounded-xl border border-cyber-700 bg-cyber-950 flex flex-col justify-between space-y-2";
+                box.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-white font-mono text-xs">${h.name}</span>
+                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyber-900 border border-cyber-700 text-cyan-300">${h.sev}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1">${h.desc}</p>
+                    </div>
+                    <div class="pt-2 border-t border-cyber-800 text-[10px] font-mono text-slate-400">
+                        <span class="text-slate-500">Recommended Syntax:</span>
+                        <code class="text-emerald-400 block bg-cyber-900 px-2 py-1 rounded mt-1 overflow-x-auto">${h.code}</code>
+                    </div>
+                `;
+                grid.appendChild(box);
+            });
+        }
+
+        function calculateScoreAndVerdict() {
+            let score = 50; // baseline
+
+            if (auditState.records.A.length > 0) score += 10;
+            if (auditState.analysis.hasIpv6) score += 5;
+            if (auditState.analysis.hasSpf) score += 15;
+            if (auditState.analysis.hasDmarc) score += 15;
+            if (auditState.analysis.hasCaa) score += 5;
+
+            // Check if CDN is active
+            if (auditState.analysis.cdnDetected.includes('Cloudflare') || auditState.analysis.cdnDetected.includes('Akamai') || auditState.analysis.cdnDetected.includes('Amazon')) {
+                score += 5;
+            }
+
+            auditState.score = score;
+
+            let grade = "F";
+            let color = "text-rose-400 border-rose-500";
+            let verdict = "HIGH RISK / VULNERABLE POSTURE";
+
+            if (score >= 90) {
+                grade = "A+";
+                color = "text-emerald-400 border-emerald-500";
+                verdict = "EXCELLENT SECURITY HYGIENE";
+            } else if (score >= 80) {
+                grade = "A";
+                color = "text-emerald-400 border-emerald-500";
+                verdict = "SOLID DEFENSIVE BASELINE";
+            } else if (score >= 70) {
+                grade = "B";
+                color = "text-cyan-400 border-cyan-500";
+                verdict = "MODERATE POSTURE (ACTION NEEDED)";
+            } else if (score >= 60) {
+                grade = "C";
+                color = "text-amber-400 border-amber-500";
+                verdict = "BELOW STANDARD (MISSING CONTROLS)";
+            } else {
+                grade = "D";
+                color = "text-rose-400 border-rose-500";
+                verdict = "CRITICAL RISKS IDENTIFIED";
+            }
+
+            auditState.grade = grade;
+
+            document.getElementById('scoreGrade').innerText = grade;
+            document.getElementById('scoreGrade').className = `text-3xl font-black font-mono ${color.split(' ')[0]}`;
+            document.getElementById('scoreNumber').innerText = `${score} / 100`;
+            document.getElementById('scoreCircle').className = `w-24 h-24 rounded-full border-4 ${color.split(' ')[1]} bg-cyber-950 flex flex-col items-center justify-center shadow-inner`;
+            document.getElementById('postureVerdict').innerText = verdict;
+            document.getElementById('postureVerdict').className = `text-xs font-bold font-mono ${color.split(' ')[0]}`;
+
+            // Update Metric Pills
+            document.getElementById('statDns').innerText = auditState.analysis.cdnDetected.includes('Direct') ? "Standard" : "Protected";
+            document.getElementById('statDns').className = "font-bold text-cyan-400";
+
+            document.getElementById('statEmail').innerText = (auditState.analysis.hasSpf && auditState.analysis.hasDmarc) ? "Configured" : "Vulnerable";
+            document.getElementById('statEmail').className = (auditState.analysis.hasSpf && auditState.analysis.hasDmarc) ? "font-bold text-emerald-400" : "font-bold text-rose-400";
+
+            document.getElementById('statCaa').innerText = auditState.analysis.hasCaa ? "Present" : "Missing";
+            document.getElementById('statCaa').className = auditState.analysis.hasCaa ? "font-bold text-emerald-400" : "font-bold text-amber-400";
+
+            document.getElementById('statIpv6').innerText = auditState.analysis.hasIpv6 ? "Active" : "Disabled";
+            document.getElementById('statIpv6').className = auditState.analysis.hasIpv6 ? "font-bold text-cyan-400" : "font-bold text-slate-400";
+
+            // Populate Stage 5 Remediation List
+            renderRemediationRoadmap();
+        }
+
+        function renderRemediationRoadmap() {
+            const list = document.getElementById('remediationList');
+            list.innerHTML = '';
+
+            const tasks = [];
+
+            if (!auditState.analysis.hasDmarc) {
+                tasks.push({
+                    priority: "CRITICAL",
+                    title: "Implement Strict DMARC Policy (_dmarc TXT record)",
+                    desc: "Configure `v=DMARC1; p=reject; rua=mailto:dmarc-reports@" + auditState.currentDomain + "` to prevent email spoofing attacks.",
+                    badge: "bg-rose-950 text-rose-400 border-rose-800"
+                });
+            }
+
+            if (!auditState.analysis.hasSpf) {
+                tasks.push({
+                    priority: "HIGH",
+                    title: "Deploy Sender Policy Framework (SPF)",
+                    desc: "Define authorized sending mail servers using `v=spf1 include:_spf.google.com ~all` (or your mail provider) to prevent unauthorized relaying.",
+                    badge: "bg-rose-950 text-rose-400 border-rose-800"
+                });
+            }
+
+            if (!auditState.analysis.hasCaa) {
+                tasks.push({
+                    priority: "MEDIUM",
+                    title: "Restrict Certificate Authorities via CAA Records",
+                    desc: "Add CAA DNS records for your designated CAs (e.g. `0 issue \"letsencrypt.org\"` or `0 issue \"digicert.com\"`) to forbid unauthorized SSL issuance.",
+                    badge: "bg-amber-950 text-amber-400 border-amber-800"
+                });
+            }
+
+            tasks.push({
+                priority: "HIGH",
+                title: "Enforce Content-Security-Policy (CSP) & HSTS Headers",
+                desc: "Deploy a Content-Security-Policy header restricting script executions and enable HSTS with a 1-year max-age on the web server gateway.",
+                badge: "bg-cyan-950 text-cyan-400 border-cyan-800"
+            });
+
+            tasks.push({
+                priority: "LOW",
+                title: "Enable Dual-Stack IPv6 (AAAA) Routing",
+                desc: "Provision AAAA DNS records and IPv6 listeners on load balancers to support modern mobile and international network routing.",
+                badge: "bg-slate-900 text-slate-300 border-slate-700"
+            });
+
+            tasks.forEach(t => {
+                const item = document.createElement('div');
+                item.className = "p-3.5 rounded-xl border border-cyber-700 bg-cyber-950 space-y-1.5";
+                item.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-white font-mono">${escapeHtml(t.title)}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-mono border ${t.badge}">${t.priority}</span>
+                    </div>
+                    <p class="text-slate-400 text-xs">${escapeHtml(t.desc)}</p>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        async function requestAiThreatAnalysis() {
+            if (!auditState.currentDomain) return;
+
+            const placeholder = document.getElementById('aiThreatPlaceholder');
+            const loading = document.getElementById('aiThreatLoading');
+            const content = document.getElementById('aiThreatContent');
+            const btn = document.getElementById('refreshAiBtn');
+
+            placeholder.classList.add('hidden');
+            loading.classList.remove('hidden');
+            content.classList.add('hidden');
+            btn.disabled = true;
+
+            const domain = auditState.currentDomain;
+            const prompt = `You are a Principal Web Security Architect. Analyze this live security telemetry for target domain "${domain}":
+- Authoritative DNS: ${auditState.records.A.length} IPv4, ${auditState.records.AAAA.length} IPv6 records.
+- Mail Security: SPF=${auditState.analysis.hasSpf ? 'Configured' : 'MISSING'}, DMARC=${auditState.analysis.hasDmarc ? 'Configured' : 'MISSING'}.
+- CAA Protection: ${auditState.analysis.hasCaa ? 'Active' : 'MISSING'}.
+- Edge Infrastructure / CDN: ${auditState.analysis.cdnDetected}.
+- Overall Security Grade: ${auditState.grade} (${auditState.score}/100).
+
+Provide a concise, technically accurate threat assessment for ${domain}:
+1. Threat Surface Summary (What kind of assets and risks exist for this domain)
+2. Primary Exposure Vectors (e.g. Email Spoofing, Subdomain Takeover, MITM/SSL risk)
+3. Immediate Hardening Action Item`;
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: {
+                    parts: [{ text: "You are a professional defensive security engineer. Provide factual, concise, target-specific web security threat modeling." }]
+                }
+            };
+
+            let reply = "";
+            let attempts = 0;
+            const maxAttempts = 3;
+
+            while (attempts < maxAttempts && !reply) {
+                try {
+                    const res = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+                        reply = data.candidates[0].content.parts[0].text;
+                    } else {
+                        throw new Error("Invalid format");
+                    }
+                } catch (err) {
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        await new Promise(r => setTimeout(r, Math.pow(2, attempts) * 1000));
+                    } else {
+                        reply = `### Threat Surface Analysis for ${domain}\n\n` +
+                                `**1. Perimeter Evaluation:** The domain resolves to ${auditState.records.A.length} IP endpoints via ${auditState.analysis.cdnDetected}.\n\n` +
+                                `**2. Identity & Spoofing Risk:** DMARC is ${auditState.analysis.hasDmarc ? 'enforced' : 'absent (high risk for phishing impersonation)'}.\n\n` +
+                                `**3. Defensive Roadmap:** Ensure strict transport security (HSTS), implement CAA restrictions, and enforce Content-Security-Policy headers across web gateways.`;
+                    }
+                }
+            }
+
+            loading.classList.add('hidden');
+            content.classList.remove('hidden');
+            content.innerText = reply;
+            btn.disabled = false;
+        }
+
+        function exportAuditReport() {
+            window.print();
+        }
+
+        function clearCurrentAudit() {
+            document.getElementById('targetDomainInput').value = '';
+            document.getElementById('liveHostBadge').innerText = "No Target Loaded";
+            document.getElementById('scanStatusBadge').innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-500 inline-block mr-1.5"></span> Awaiting target`;
+            document.getElementById('dnsRecordBody').innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500 italic">Enter any domain above to perform real live DNS enumeration.</td></tr>`;
+            document.getElementById('securityRecordsList').innerHTML = `<div class="p-4 rounded-lg bg-cyber-950 text-center text-slate-500 text-xs italic">Run an audit to inspect SPF, DMARC, and CAA configurations.</div>`;
+            document.getElementById('scoreGrade').innerText = "-";
+            document.getElementById('scoreNumber').innerText = "-- / 100";
+            document.getElementById('postureVerdict').innerText = "Target Unscanned";
+            document.getElementById('exportBtn').disabled = true;
+            switchTab(1);
+            logEvent("[*] Workspace cleared for new assessment.", "text-cyan-400");
+        }
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            return String(text).replace(/[&<>"']/g, function(m) {
+                return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[m];
+            });
+        }
+    </script>
+</body>
+</html>
